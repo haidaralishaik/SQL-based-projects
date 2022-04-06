@@ -1,0 +1,162 @@
+select * from NashvilleHousing
+
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Standardize Date Format (reformatting for more readabilitity)
+select SaleDate, CONVERT(Date,SaleDate)
+from NashvilleHousing
+
+update NashvilleHousing
+SET SaleDate=CONVERT(Date,SaleDate)
+
+select * from NashvilleHousing
+-- above method didn't work for me
+
+--using Alter table clause to create a new column of date datatype and filling it with the Date formatted SaleDate entries
+Alter table NashvilleHousing
+add SaleDateConverted Date
+
+update NashvilleHousing
+SET SaleDateConverted=CONVERT(Date,SaleDate)
+select * from NashvilleHousing
+ --------------------------------------------------------------------------------------------------------------------------
+
+-- filling the empty cells in Property Address data
+-- the data had a pattern i.e when parcelID is the same, their corresponding property address was also same. 
+select a.ParcelID,a.PropertyAddress,b.ParcelID,b.PropertyAddress, ISNULL(a.PropertyAddress,b.PropertyAddress) as filledAddress
+from NashvilleHousing a
+join NashvilleHousing b
+on a.ParcelID=b.ParcelID
+and a.[UniqueID ]<>b.[UniqueID ]
+where a.PropertyAddress is null
+
+
+
+
+Update a -- use alias when using joins in update clause
+SET PropertyAddress=ISNULL(a.PropertyAddress,b.PropertyAddress) 
+from NashvilleHousing a
+join NashvilleHousing b
+on a.ParcelID=b.ParcelID
+and a.[UniqueID ]<>b.[UniqueID ]
+where a.PropertyAddress is null
+
+
+
+
+select * from NashvilleHousing
+where PropertyAddress is null
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Breaking out Address into Individual Columns (Address, City, State) so that it can be used i visualisations or further analysis
+-- i used two different functions for the same case (for PropertyAddress and then for OwnerAddress)
+-- method 1.CHARINDEX  seperates the strings based on the delimiter (here it is ',') returning the index of the delimeter that appears the first time in the string. 
+-- method 2. parseName (easy) will be explained with the code
+select-- selecting the address and city separately
+substring(PropertyAddress,1,CHARINDEX(',',PropertyAddress,1)-1) as Address,
+substring(PropertyAddress,CHARINDEX(',',PropertyAddress,1)+1, LEN(PropertyAddress)) as City
+from NashvilleHousing
+
+Alter table NashvilleHousing
+add PropertySplitAddress Nvarchar(200)
+
+update NashvilleHousing
+SET PropertySplitAddress=substring(PropertyAddress,1,CHARINDEX(',',PropertyAddress,1)-1)
+select * from NashvilleHousing
+
+Alter table NashvilleHousing
+add PropertySplitCity Nvarchar(200)
+
+update NashvilleHousing
+SET PropertySplitCity=substring(PropertyAddress,CHARINDEX(',',PropertyAddress,1)+1, LEN(PropertyAddress))
+
+select * from NashvilleHousing 
+
+
+
+-- working on OwnerAddress
+select OwnerAddress
+from NashvilleHousing
+
+select --parsename splits data with '.' as delimiter in reverese order (so replace the delimiter (here it is',' with '.')
+PARSENAME(replace(OwnerAddress,',','.'),1) as OwnerState,
+PARSENAME(replace(OwnerAddress,',','.'),2) as OwnerCity,
+PARSENAME(replace(OwnerAddress,',','.'),3) as OwnerOnlyAddress
+from NashvilleHousing
+
+
+alter table NashvilleHousing
+add OwnerState NVarChar(60)
+update NashvilleHousing
+set OwnerState=PARSENAME(replace(OwnerAddress,',','.'),1)
+
+alter table NashvilleHousing
+add OwnerCity NVarChar(60)
+update NashvilleHousing
+set OwnerCity=PARSENAME(replace(OwnerAddress,',','.'),2)
+
+alter table NashvilleHousing
+add OwnerOnlyAddress NVarChar(100)
+update NashvilleHousing
+set OwnerOnlyAddress=PARSENAME(replace(OwnerAddress,',','.'),3)
+
+select *
+from NashvilleHousing
+--------------------------------------------------------------------------------------------------------------------------
+
+
+-- Change Y and N to Yes and No in "Sold as Vacant" field
+select distinct(SoldAsVacant), count(SoldAsVacant) as Count
+from NashvilleHousing
+group by SoldAsVacant
+order by Count
+
+select SoldAsVacant,
+case when SoldAsVacant='Y' then 'Yes'--(or)REPLACE(SoldAsVacant,'Y','Yes')
+     when SoldAsVacant='N' then 'No'-- (or)replace(SoldAsVacant,'N','No')
+	 else SoldAsVacant
+	 end
+from NashvilleHousing 
+
+
+update NashvilleHousing
+set SoldAsVacant=case when SoldAsVacant='Y' then 'Yes'--(or)REPLACE(SoldAsVacant,'Y','Yes')
+                      when SoldAsVacant='N' then 'No'-- (or)replace(SoldAsVacant,'N','No')
+	                  else SoldAsVacant
+	             end
+
+select distinct(SoldAsVacant), count(SoldAsVacant) as Count
+from NashvilleHousing
+group by SoldAsVacant
+order by Count
+
+select * from NashvilleHousing
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Remove Duplicates (show duplicates)
+with RowNumCTE as (
+select *, Row_number() over(partition by 
+							ParcelId, 
+							LandUse,
+							SalePrice,
+							SaleDateConverted,
+							PropertySplitAddress 
+							order by UniqueID) as RowNum
+from NashvilleHousing)
+
+select * from RowNumCTE
+where RowNum>1
+
+
+---------------------------------------------------------------------------------------------------------
+
+-- Delete Unused Columns
+
+alter table NashvilleHousing  --not recommended to alter raw data/ instead use views or temp tables
+drop column OwnerAddress, TaxDistrict, PropertyAddress, SaleDate
+
+
+select * from NashvilleHousing
+
+
