@@ -1,3 +1,5 @@
+--some examples of subqueries and join
+
 SELECT zc.*
 FROM ZipCensus zc
 WHERE zc.stab IN (SELECT stab
