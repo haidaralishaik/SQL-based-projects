@@ -1,16 +1,9 @@
-LAB 1 - DAB 203
 
-This lab will be using the database SQLBook and the tables we loaded on Week 2.
-Suggestion: Use the Entity Relationship Diagram PPT (There is a copy located in Week 3 Lab Folder on Blackboard.)
-
-For each question, show your Query code and type in the answer as a comment. When you are done use File / Save As Lab1_YourLastName.sql
-Upload the entire .SQL file to the Blackboard assignment
-----------------------------------------------------------------------------
 
 Question 1
 -- COUNT(*) returns the number of rows in an entity. An example of using
 
--- Run this Query: 
+
 
 SELECT COUNT(*) as numzip
 FROM ZipCensus
@@ -22,9 +15,7 @@ GROUP BY stab
 
 
 --We want to know how many ZipCodes are in the State of California (CA)
---Rewrite the query to show only the number of ZipCodes in California 
 
---Type your full query here:
 
 select stab, count(*) as numzip
 from ZipCensus
@@ -34,7 +25,7 @@ group by stab
 
 
 
--- How many Zipcodes are in California?
+ How many Zipcodes are in California?
 --1763
 ----------------------------------------------------------------------------
 
@@ -55,10 +46,10 @@ having total=max(total)
 
 ----------------------------------------------------------------------------
 
---Recall that we can add up total columns, get the average, the max value or min value with:
+--we can add up total columns, get the average, the max value or min value with:
 --SUM, AVG, MAX, or MIN
 --EXAMPLE:
---SELECT SUM(column1)
+--SELECT SUM(column1) (for my reference)
 --FROM TABLE1
 
 
@@ -91,7 +82,7 @@ Question 5: The average TotalPrice of each order was just less than $48. You can
 SELECT AVG(TotalPrice)
 FROM OrderLines
 
--- Now, write a query to Append a new column called OrderSize that creates an indicator variable of 'Low' for products below $48, and 'High' for all other products 
+-- write a query to Append a new column called OrderSize that creates an indicator variable of 'Low' for products below $48, and 'High' for all other products 
 -- for each row in the OrderLineId table.
 -- Hint, use a CASE statement
 
@@ -125,9 +116,10 @@ CROSS JOIN Products AS p
 -- each row of the campaigns table is joined to each row of the proucts table
 ----------------------------------------------------------------------------
 
+--JOINS 
+
 Question 7 - Inner Joins
 
--- Execute this Query
 
 SELECT *
 FROM Customers AS l
@@ -136,7 +128,6 @@ on l.CustomerId=r.CustomerId;
 
 -- We lost some rows from Orders table. 
 -- This is the trouble with Inner Joins.
--- Now, execute this query. 
 
 SELECT CustomerId, COUNT(CustomerId) as NumCustomers
 FROM orders
@@ -223,4 +214,4 @@ ORDER BY PaymentType
 what does ?? indicate
 select paymentType from Orders
 where PaymentType not in ('VI', 'MC','OC','DB','AE')
---gives ?? in paymentType (used instead of leaving an empty cell empty
+--gives ?? in paymentType (used instead of leaving an empty cell empty)
